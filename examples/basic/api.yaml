@@ -1,0 +1,57 @@
+# Basic Petstore example
+#
+# Run with:   ditto serve examples/basic/api.yaml
+# Validate:   ditto validate examples/basic/api.yaml
+#
+# This file demonstrates the core ditto features:
+#   - Static JSON responses
+#   - Path parameters using {name} syntax
+#   - Request body matching for POST routes
+#   - Custom HTTP status codes
+
+name: petstore
+
+defaults:
+  headers:
+    Content-Type: application/json
+
+routes:
+  # List all pets
+  - method: GET
+    path: /pets
+    status: 200
+    body:
+      - id: 1
+        name: Buddy
+        species: dog
+      - id: 2
+        name: Whiskers
+        species: cat
+
+  # Fetch a single pet by ID
+  # {id} is captured as a path parameter and available in templates as .Params.id
+  - method: GET
+    path: /pets/{id}
+    status: 200
+    body:
+      id: 1
+      name: Buddy
+      species: dog
+
+  # Create a pet — only matches requests that include both name and species fields.
+  # The "*" wildcard accepts any non-empty value for that field.
+  - method: POST
+    path: /pets
+    status: 201
+    body:
+      id: 3
+      message: created
+    match:
+      body:
+        name: "*"
+        species: "*"
+
+  # Delete a pet — returns 204 No Content (no body)
+  - method: DELETE
+    path: /pets/{id}
+    status: 204

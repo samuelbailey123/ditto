@@ -1,0 +1,108 @@
+# Advanced example — all ditto features
+#
+# Run with:   ditto serve examples/advanced/api.yaml
+# Validate:   ditto validate examples/advanced/api.yaml
+#
+# Features demonstrated:
+#   - Go template expressions in body strings ({{now}}, {{.Params.id}}, {{index .Query.q 0}})
+#   - CORS defaults applied to every route
+#   - Chaos injection (random error responses at a configured probability)
+#   - Artificial response delays (min/max range)
+#   - Query parameter matching
+#   - Stateful scenarios that track session state across requests
+
+name: advanced-api
+
+defaults:
+  headers:
+    Content-Type: application/json
+  cors:
+    origins:
+      - "*"
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+    headers:
+      - Content-Type
+      - Authorization
+
+routes:
+  # Health check — uses the {{now}} template helper to return the current timestamp.
+  - method: GET
+    path: /health
+    status: 200
+    body: '{"status": "ok", "timestamp": "{{now}}"}'
+
+  # User lookup — path parameter {id} is injected via {{.Params.id}}.
+  # Templates are evaluated per-request so each call reflects the live param value.
+  - method: GET
+    path: /users/{id}
+    status: 200
+    body: '{"id": "{{.Params.id}}", "name": "User {{.Params.id}}", "requested_at": "{{now}}"}'
+
+  # Search endpoint — only matches when the ?q= query parameter is present.
+  # {{index .Query.q 0}} reads the first value of the q parameter slice.
+  - method: GET
+    path: /search
+    status: 200
+    body: '{"query": "{{index .Query.q 0}}", "results": []}'
+    match:
+      query:
+        q: "*"
+
+  # Unreliable endpoint — simulates a flaky upstream dependency.
+  # 40% of requests will receive a 503 instead of the success body.
+  - method: GET
+    path: /unreliable
+    status: 200
+    body: '{"data": "success"}'
+    chaos:
+      probability: 0.4
+      status: 503
+      body: '{"error": "service unavailable"}'
+
+  # Slow endpoint — adds a randomised delay between 200ms and 800ms.
+  # Useful for testing client timeout handling and loading states.
+  - method: GET
+    path: /slow
+    status: 200
+    body: '{"data": "worth the wait"}'
+    delay:
+      min: 200ms
+      max: 800ms
+
+# Scenarios define stateful request sequences.
+#
+# Each step fires when its `on` pattern matches an incoming request.
+# `when_state` guards execution — the step only runs if the current state matches.
+# `set_state` updates the session state after the step executes.
+# State is scoped per connected client session.
+scenarios:
+  - name: auth-flow
+    steps:
+      # Step 1: client POSTs credentials, server issues a token and enters authenticated state.
+      - on: "POST /login"
+        set_state: authenticated
+        status: 200
+        body:
+          token: "tok_abc123"
+
+      # Step 2: only accessible once authenticated. Returns profile data.
+      - on: "GET /profile"
+        when_state: authenticated
+        set_state: authenticated
+        status: 200
+        body:
+          id: 1
+          name: Alice
+          role: admin
+
+      # Step 3: clears state, ending the session. Subsequent /profile calls will fail.
+      - on: "POST /logout"
+        when_state: authenticated
+        set_state: ""
+        status: 200
+        body:
+          message: "logged out"
