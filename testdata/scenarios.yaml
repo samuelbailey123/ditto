@@ -1,0 +1,23 @@
+name: stateful-api
+routes:
+  - method: GET
+    path: /cart
+    status: 200
+    body: {"items": []}
+scenarios:
+  - name: shopping-flow
+    steps:
+      - on: "POST /cart/items"
+        set_state: item_added
+        status: 201
+        body: {"message": "item added"}
+      - on: "GET /cart"
+        when_state: item_added
+        set_state: item_added
+        status: 200
+        body: {"items": [{"id": 1, "name": "Widget"}]}
+      - on: "POST /cart/checkout"
+        when_state: item_added
+        set_state: checked_out
+        status: 200
+        body: {"order_id": "ORD-001"}

@@ -1,0 +1,17 @@
+name: template-api
+defaults:
+  headers:
+    Content-Type: application/json
+routes:
+  - method: GET
+    path: /greet/{name}
+    status: 200
+    body: '{"message": "Hello, {{.Params.name}}!", "timestamp": "{{now}}"}'
+  - method: GET
+    path: /echo
+    status: 200
+    body: '{"method": "{{.Method}}", "path": "{{.Path}}", "id": "{{uuid}}"}'
+  - method: GET
+    path: /items
+    status: 200
+    body: '{"items": [{{range $i, $v := seq 3}}{{if $i}},{{end}}{"id": {{$v}}}{{end}}]}'

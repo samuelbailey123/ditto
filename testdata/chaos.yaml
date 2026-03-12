@@ -1,0 +1,20 @@
+name: chaos-api
+defaults:
+  headers:
+    Content-Type: application/json
+routes:
+  - method: GET
+    path: /flaky
+    status: 200
+    body: {"data": "success"}
+    chaos:
+      probability: 0.5
+      status: 500
+      body: '{"error": "internal server error"}'
+  - method: GET
+    path: /slow
+    status: 200
+    body: {"data": "eventually"}
+    delay:
+      min: 50ms
+      max: 200ms

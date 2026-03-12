@@ -1,0 +1,21 @@
+name: matching-api
+defaults:
+  headers:
+    Content-Type: application/json
+routes:
+  - method: GET
+    path: /search
+    status: 200
+    body: {"results": []}
+    match:
+      query:
+        q: "*"
+  - method: POST
+    path: /users
+    status: 201
+    body: {"created": true}
+    match:
+      headers:
+        Authorization: "Bearer *"
+      body:
+        name: "*"

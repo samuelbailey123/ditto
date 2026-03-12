@@ -1,0 +1,32 @@
+name: basic-api
+defaults:
+  headers:
+    Content-Type: application/json
+routes:
+  - method: GET
+    path: /health
+    status: 200
+    body: {"status": "ok"}
+  - method: GET
+    path: /users
+    status: 200
+    body:
+      - id: 1
+        name: Alice
+      - id: 2
+        name: Bob
+  - method: GET
+    path: /users/{id}
+    status: 200
+    body:
+      id: 1
+      name: Alice
+  - method: POST
+    path: /users
+    status: 201
+    body: {"id": 3, "name": "Charlie"}
+    delay:
+      fixed: 100ms
+  - method: DELETE
+    path: /users/{id}
+    status: 204

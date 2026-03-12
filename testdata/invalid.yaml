@@ -1,0 +1,23 @@
+name: invalid-api
+routes:
+  - method: INVALID
+    path: missing-slash
+    status: 999
+  - method: GET
+    status: 200
+  - method: POST
+    path: /both
+    status: 200
+    body: inline
+    body_file: file.json
+  - method: GET
+    path: /bad-chaos
+    status: 200
+    chaos:
+      probability: 1.5
+      status: 500
+  - method: GET
+    path: /bad-delay
+    status: 200
+    delay:
+      min: 100ms
