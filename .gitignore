@@ -1,0 +1,41 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/ditto
+
+# Test binary
+*.test
+
+# Output of go build
+/dist/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency vendor directory
+vendor/
+
+# Test and coverage artifacts
+coverage.*
+*.out
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+
+# Ditto-specific
+.claude/
