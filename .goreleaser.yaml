@@ -1,0 +1,73 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: ditto
+    main: ./cmd/ditto
+    binary: ditto
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/samuelbailey123/ditto/internal/version.Version={{.Version}}
+      - -X github.com/samuelbailey123/ditto/internal/version.Commit={{.Commit}}
+      - -X github.com/samuelbailey123/ditto/internal/version.Date={{.Date}}
+
+archives:
+  - id: ditto
+    builds:
+      - ditto
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    formats:
+      - tar.gz
+    files:
+      - LICENSE
+      - README.md
+      - examples/**/*
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+release:
+  draft: false
+  prerelease: auto
+
+brews:
+  - name: ditto
+    skip_upload: true
+    repository:
+      owner: samuelbailey123
+      name: homebrew-tap
+    homepage: "https://github.com/samuelbailey123/ditto"
+    description: "Instant API mocking from YAML definition files."
+    license: "MIT"
+    install: |
+      bin.install "ditto"
+    test: |
+      system "#{bin}/ditto", "version"
